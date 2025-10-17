@@ -1,48 +1,48 @@
 import React, { useState } from 'react';
 import Logo from '@/components/Logo';
-
-interface Socio {
-  id: string;
-  nome: string;
-  cnpj: string;
-  participacao: number;
-  cnaes: string[];
-}
+import { SocioDTO } from '@/types/socio';
+import { socioService } from '@/services/api';
 
 const Index: React.FC = () => {
   const [participacaoMinima, setParticipacaoMinima] = useState<string>('');
-  const [socios, setSocios] = useState<Socio[]>([]);
-  const [selectedSocio, setSelectedSocio] = useState<Socio | null>(null);
+  const [socios, setSocios] = useState<SocioDTO[]>([]);
+  const [selectedSocio, setSelectedSocio] = useState<SocioDTO | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const mockSocios: Socio[] = [
-    {
-      id: '1',
-      nome: 'Marcelo Soares Da Silva Correia Neto',
-      cnpj: '53.535.555/0001-55',
-      participacao: 25,
-      cnaes: ['7311-4/00 – Agências de publicidade']
-    },
-    {
-      id: '2',
-      nome: 'Fabricio Azevedo Portella',
-      cnpj: '53.535.555/0001-55',
-      participacao: 30,
-      cnaes: ['7311-4/00 – Agências de publicidade']
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const min = parseFloat(participacaoMinima) || 0;
+      const result = await socioService.listarSocios(min);
+      setSocios(result);
+      setShowResults(true);
+    } catch (err) {
+      setError('Erro ao buscar sócios. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const handleSearch = () => {
-    const min = parseFloat(participacaoMinima) || 0;
-    const filtered = mockSocios.filter(socio => socio.participacao >= min);
-    setSocios(filtered);
-    setShowResults(true);
   };
 
-  const handleSocioClick = (socio: Socio) => {
-    setSelectedSocio(socio);
-    setShowDetails(true);
+  const handleSocioClick = async (socio: SocioDTO) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await socioService.buscarPorCnpj(socio.cnpj);
+      if (result) {
+        setSelectedSocio(result);
+        setShowDetails(true);
+      } else {
+        setError('Sócio não encontrado.');
+      }
+    } catch (err) {
+      setError('Erro ao buscar detalhes do sócio.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBackToResults = () => {
@@ -52,6 +52,7 @@ const Index: React.FC = () => {
   const handleBackToSearch = () => {
     setShowResults(false);
     setShowDetails(false);
+    setError(null);
   };
 
   return (
@@ -66,6 +67,11 @@ const Index: React.FC = () => {
         {!showResults && !showDetails && (
           <div className="flex justify-center">
             <div className="bg-[#FFFFFF] rounded-lg border border-blue-200 p-6 w-full max-w-2xl">
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
               <div className="flex items-center gap-4">
                 <label className="text-[#1E1E1E] font-medium whitespace-nowrap">
                   Participação Mínima (%)
@@ -79,9 +85,10 @@ const Index: React.FC = () => {
                 />
                 <button
                   onClick={handleSearch}
-                  className="bg-[#1E1E1E] text-[#FFFFFF] px-6 py-2 rounded-lg hover:opacity-90 transition-colors"
+                  disabled={loading}
+                  className="bg-[#1E1E1E] text-[#FFFFFF] px-6 py-2 rounded-lg hover:opacity-90 transition-colors disabled:opacity-50"
                 >
-                  Pesquisar
+                  {loading ? 'Pesquisando...' : 'Pesquisar'}
                 </button>
               </div>
             </div>
@@ -110,13 +117,13 @@ const Index: React.FC = () => {
                 <tbody>
                   {socios.map((socio, index) => (
                     <tr 
-                      key={socio.id}
+                      key={socio.cnpj}
                       className={`${index % 2 === 0 ? 'bg-[#FFFFFF]' : 'bg-[#F3F3F3]'} hover:bg-gray-100 cursor-pointer`}
                       onClick={() => handleSocioClick(socio)}
                     >
                       <td className="px-4 py-3 text-[#1E1E1E]">{socio.nome}</td>
                       <td className="px-4 py-3 text-[#1E1E1E]">{socio.cnpj}</td>
-                      <td className="px-4 py-3 text-[#1E1E1E]">{socio.participacao}%</td>
+                      <td className="px-4 py-3 text-[#1E1E1E]">{socio.participacao}</td>
                       <td className="px-4 py-3">
                         <svg className="w-5 h-5 text-[#1E1E1E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -141,6 +148,11 @@ const Index: React.FC = () => {
             </button>
 
             <div className="bg-[#FFFFFF] rounded-lg border p-6 w-full max-w-2xl">
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
               <div className="space-y-3">
                 <div>
                   <span className="font-medium text-[#1E1E1E]">Sócio:</span>
@@ -152,35 +164,57 @@ const Index: React.FC = () => {
                 </div>
                 <div>
                   <span className="font-medium text-[#1E1E1E]">Participação:</span>
-                  <span className="ml-2 text-[#1E1E1E]">{selectedSocio.participacao}%</span>
+                  <span className="ml-2 text-[#1E1E1E]">{selectedSocio.participacao}</span>
                 </div>
-                <div>
-                  <span className="font-medium text-[#1E1E1E]">CNAES:</span>
-                  <div className="mt-2">
-                    {selectedSocio.cnaes.map((cnae, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="text-[#1E1E1E]">{cnae}</span>
-                        <svg className="w-4 h-4 text-[#1E1E1E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {selectedSocio.receita && (
+                  <>
+                    <div>
+                      <span className="font-medium text-[#1E1E1E]">Empresa:</span>
+                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.nome}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1E1E1E]">Abertura:</span>
+                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.abertura}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1E1E1E]">Natureza Jurídica:</span>
+                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.natureza_juridica}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1E1E1E]">CEP:</span>
+                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.cep}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1E1E1E]">Município:</span>
+                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.municipio}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="bg-[#FFFFFF] rounded-lg border overflow-hidden w-full max-w-4xl">
-              <div className="h-96 bg-[#F3F3F3] flex items-center justify-center">
-                <div className="text-center text-[#1E1E1E]">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-[#1E1E1E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <p>Mapa da localização</p>
-                  <div className="w-4 h-4 bg-[#1E1E1E] rounded-full mx-auto mt-4"></div>
+              {selectedSocio.mapa ? (
+                <iframe
+                  src={selectedSocio.mapa}
+                  width="100%"
+                  height="384"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              ) : (
+                <div className="h-96 bg-[#F3F3F3] flex items-center justify-center">
+                  <div className="text-center text-[#1E1E1E]">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-[#1E1E1E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p>Mapa não disponível</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}

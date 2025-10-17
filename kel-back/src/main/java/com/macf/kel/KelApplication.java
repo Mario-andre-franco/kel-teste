@@ -1,15 +1,11 @@
 package com.macf.kel;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
-@SpringBootApplication
-@EnableFeignClients
+@QuarkusMain
 public class KelApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(KelApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        Quarkus.run(args);
+    }
 }

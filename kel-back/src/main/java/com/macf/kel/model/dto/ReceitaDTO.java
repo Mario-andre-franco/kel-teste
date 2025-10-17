@@ -1,6 +1,7 @@
 package com.macf.kel.model.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,11 +11,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReceitaDTO {
 
-    private String nome;
-    private String abertura;
-    private String natureza_juridica;
-    private String cep;
-    private String municipio;
+    private String cnpj_raiz;
+    private String razao_social;
+    private String capital_social;
+    private String responsavel_federativo;
+    private String atualizado_em;
+    private PorteDTO porte;
+    private NaturezaJuridicaDTO natureza_juridica;
+    private QualificacaoResponsavelDTO qualificacao_do_responsavel;
+    private Object simples;
+    private Object estabelecimento;
 }

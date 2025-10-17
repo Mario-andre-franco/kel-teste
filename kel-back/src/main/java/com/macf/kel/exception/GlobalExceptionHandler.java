@@ -1,31 +1,26 @@
 package com.macf.kel.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+@Provider
+public class GlobalExceptionHandler implements ExceptionMapper<Exception> {
 
-    @ExceptionHandler(SocioException.class)
-    public ResponseEntity<?> handleSocioException(SocioException e) {
-        return ResponseEntity
-                .status(e.getStatusCode())
-                .body(Map.of(
-                        "erro", e.getMessage(),
-                        "status", e.getStatusCode()
-                ));
-    }
+    @Override
+    public Response toResponse(Exception exception) {
+        Map<String, Object> body = new HashMap<>();
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception e) {
-        return ResponseEntity
-                .internalServerError()
-                .body(Map.of(
-                        "erro", "Erro interno inesperado",
-                        "descricao", e.getMessage()
-                ));
+        if (exception instanceof SocioException socioEx) {
+            body.put("erro", socioEx.getMessage());
+            body.put("status", socioEx.getStatusCode());
+            return Response.status(socioEx.getStatusCode()).entity(body).build();
+        }
+
+        body.put("erro", "Erro interno inesperado");
+        body.put("descricao", exception.getMessage());
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(body).build();
     }
 }
