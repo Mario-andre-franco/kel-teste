@@ -168,27 +168,38 @@ const Index: React.FC = () => {
                 </div>
                 {selectedSocio.receita && (
                   <>
-                    <div>
-                      <span className="font-medium text-[#1E1E1E]">Empresa:</span>
-                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.nome}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-[#1E1E1E]">Abertura:</span>
-                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.abertura}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-[#1E1E1E]">Natureza Jurídica:</span>
-                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.natureza_juridica}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-[#1E1E1E]">CEP:</span>
-                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.cep}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-[#1E1E1E]">Município:</span>
-                      <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.municipio}</span>
-                    </div>
-                  </>
+                  <div>
+                    <span className="font-medium text-[#1E1E1E]">Empresa:</span>
+                    <span className="ml-2 text-[#1E1E1E]">{selectedSocio.receita.razao_social}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-[#1E1E1E]">Capital Social:</span>
+                    <span className="ml-2 text-[#1E1E1E]">
+                      {selectedSocio.receita.capital_social
+                        ? `R$ ${Number(selectedSocio.receita.capital_social).toLocaleString('pt-BR')}`
+                        : '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-[#1E1E1E]">Natureza Jurídica:</span>
+                    <span className="ml-2 text-[#1E1E1E]">
+                      {selectedSocio.receita.natureza_juridica?.descricao || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-[#1E1E1E]">Porte:</span>
+                    <span className="ml-2 text-[#1E1E1E]">
+                      {selectedSocio.receita.porte?.descricao || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-[#1E1E1E]">Qualificação do Responsável:</span>
+                    <span className="ml-2 text-[#1E1E1E]">
+                      {selectedSocio.receita.qualificacao_do_responsavel?.descricao || '-'}
+                    </span>
+                  </div>
+                </>
+                
                 )}
               </div>
             </div>
