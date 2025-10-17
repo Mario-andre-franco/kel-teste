@@ -1,0 +1,21 @@
+# FRONTEND
+kel-front/node_modules/
+kel-front/package-lock.json
+kel-front/.next/
+kel-front/.env
+kel-front/dist/
+kel-front/build/
+
+# BACKEND
+kel-back/target/
+kel-back/.idea/
+kel-back/*.iml
+kel-back/.classpath
+kel-back/.project
+kel-back/.settings/
+kel-back/.env
+kel-back/application.properties
+
+# SISTEMA
+.DS_Store
+Thumbs.db
